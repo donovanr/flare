@@ -7,8 +7,8 @@
 # Version: 1.2.0                                                                   #
 #----------------------------------------------------------------------------------#
 
-slim <- function(X, 
-                 Y, 
+slim <- function(X,
+                 Y,
                  lambda = NULL,
                  nlambda = NULL,
                  lambda.min.value = NULL,
@@ -76,13 +76,13 @@ slim <- function(X,
     yy = y1
   }
   intercept = FALSE
-  
+
   if(intercept){
     xx = cbind(rep(1, nrow(xx)), xx)
     X = cbind(rep(1, nrow(X)), X)
     d = d+1
   }
-  
+
   if(!is.null(lambda)) nlambda = length(lambda)
   if(is.null(lambda)){
     if(is.null(nlambda))
@@ -165,7 +165,7 @@ slim <- function(X,
   if(method=="lasso")
     out = slim.lasso.ladm.scr(yy, xx, lambda, nlambda, n, d, maxdf, max.ite, prec, intercept, verbose)
   runt=Sys.time()-begt
-  
+
   df=rep(0,nlambda)
   if(intercept){
     for(i in 1:nlambda)
@@ -174,7 +174,7 @@ slim <- function(X,
     for(i in 1:nlambda)
       df[i] = sum(out$beta[[i]]!=0)
   }
-  
+
   est = list()
   intcpt0=matrix(0,nrow=1,ncol=nlambda)
   intcpt=matrix(0,nrow=1,ncol=nlambda)
@@ -195,7 +195,7 @@ slim <- function(X,
       intcpt[k] = ym-as.numeric(xm[1,]%*%beta1[,k])
     }
   }
-  
+
   est$beta0 = out$beta
   est$beta = beta1
   est$intercept = intcpt
@@ -216,7 +216,7 @@ slim <- function(X,
 }
 
 print.slim <- function(x, ...)
-{  
+{
   cat("\n")
   cat("slim options summary: \n")
   cat(x$nlambda, "lambdas used:\n")
@@ -273,7 +273,7 @@ coef.slim <- function(object, lambda.idx = c(1:3), beta.idx = c(1:3), ...)
     cat("\n")
   }
 }
-predict.slim <- function(object, newdata, lambda.idx = c(1:3), Y.pred.idx = c(1:5), ...)
+predict.slim <- function(object, newdata, lambda.idx = c(1:3), Y.pred.idx = c(1:5), verbose=TRUE, ...)
 {
   pred.n = nrow(newdata)
   lambda.n = length(lambda.idx)
@@ -281,23 +281,24 @@ predict.slim <- function(object, newdata, lambda.idx = c(1:3), Y.pred.idx = c(1:
   intcpt = matrix(rep(object$intercept[,lambda.idx],pred.n),nrow=pred.n,
                   ncol=lambda.n,byrow=T)
   Y.pred = newdata%*%object$beta[,lambda.idx] + intcpt
-  cat("\n Values of predicted responses: \n")
-  cat("   index   ")
-  for(i in 1:lambda.n){
-    cat("",formatC(lambda.idx[i],digits=5,width=10),"")
-  }
-  cat("\n")
-  cat("   lambda  ")
-  for(i in 1:lambda.n){
-    cat("",formatC(object$lambda[lambda.idx[i]],digits=4,width=10),"")
-  }
-  cat("\n")
-  for(i in 1:Y.pred.n){
-    cat("    Y",formatC(Y.pred.idx[i],digits=5,width=-5))
-    for(j in 1:lambda.n){
-      cat("",formatC(Y.pred[Y.pred.idx[i],j],digits=4,width=10),"")
+  if(verbose) {
+    cat("\n Values of predicted responses: \n")
+    cat("   index   ")
+    for(i in 1:lambda.n){
+      cat("",formatC(lambda.idx[i],digits=5,width=10),"")
     }
     cat("\n")
+    cat("   lambda  ")
+    for(i in 1:lambda.n){
+      cat("",formatC(object$lambda[lambda.idx[i]],digits=4,width=10),"")
+    }
+    cat("\n")
+    for(i in 1:Y.pred.n){
+      cat("    Y",formatC(Y.pred.idx[i],digits=5,width=-5))
+      for(j in 1:lambda.n){
+        cat("",formatC(Y.pred[Y.pred.idx[i],j],digits=4,width=10),"")
+      }
+      cat("\n")}
   }
   return(list(Y.pred))
 }
